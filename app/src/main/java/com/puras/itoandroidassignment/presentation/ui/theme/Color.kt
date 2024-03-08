@@ -1,4 +1,4 @@
-package com.puras.itoandroidassignment.ui.theme
+package com.puras.itoandroidassignment.presentation.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
