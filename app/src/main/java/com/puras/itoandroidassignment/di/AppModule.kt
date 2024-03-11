@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.puras.itoandroidassignment.data.local.AppDatabase
 import com.puras.itoandroidassignment.data.remote.GithubApi
+import com.puras.itoandroidassignment.util.NetworkStatusTracker
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -38,6 +39,12 @@ object AppModule {
             .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideNetworkTracker(@ApplicationContext context: Context): NetworkStatusTracker {
+        return NetworkStatusTracker(context)
     }
 
     @Provides

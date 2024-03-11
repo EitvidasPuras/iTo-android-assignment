@@ -2,10 +2,11 @@
     <string name="app_name">iTo Android Assignment</string>
 
     <string name="error.unknown">An unknown error occurred, try again later</string>
+    <string name="error.not_found">This feed does not exist</string>
     <string name="error.input">Should not be empty</string>
 
-    <string name="message.no_data">No Data. Try again</string>
-    <string name="message.no_data.offline">(The app does work offline.\nJust need some initial data first)</string>
+    <string name="message.no_data.title">No Data</string>
+    <string name="message.no_data.subtitle">Try again</string>
 
     <string name="label.user_input">User</string>
     <string name="label.repo_input">Repo</string>

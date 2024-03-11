@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.puras.itoandroidassignment.data.local.model.Feed
 import com.puras.itoandroidassignment.domain.use_case.GetFeedsUseCase
+import com.puras.itoandroidassignment.util.ErrorType
+import com.puras.itoandroidassignment.util.NetworkStatusTracker
 import com.puras.itoandroidassignment.util.REPO_DISCUSSIONS
 import com.puras.itoandroidassignment.util.REPO_DISCUSSIONS_CATEGORY
 import com.puras.itoandroidassignment.util.Resource
@@ -14,6 +16,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -31,7 +34,6 @@ data class FeedViewState(
 )
 
 sealed interface FeedAction {
-    data object OnInit : FeedAction
     data class FeedSelected(val feed: Feed) : FeedAction
     data class UserInputUpdated(val text: String) : FeedAction
     data class RepoInputUpdated(val text: String) : FeedAction
@@ -40,12 +42,14 @@ sealed interface FeedAction {
 
 sealed interface FeedEvent {
     data class NavigateToEntryScreen(val feed: Feed) : FeedEvent
-    data object DisplayUnknownErrorMessage : FeedEvent
+    data object DisplayNetworkCallErrorMessage : FeedEvent
+    data object DisplayNotFoundErrorMessage : FeedEvent
 }
 
 @HiltViewModel
 class FeedViewModel @Inject constructor(
     private val getFeedsUseCase: GetFeedsUseCase,
+    private val networkStatusTracker: NetworkStatusTracker,
 ) : ViewModel() {
 
     private val _stateFlow = MutableStateFlow(FeedViewState())
@@ -55,13 +59,13 @@ class FeedViewModel @Inject constructor(
     val eventFlow = _eventFlow.asSharedFlow()
 
     init {
-        Timber.d("OnInit")
-        handleInit()
+        Timber.d("FeedViewModel init")
+        trackNetworkStatus()
+        getFeeds()
     }
 
     suspend fun handleAction(action: FeedAction) {
         when (action) {
-            FeedAction.OnInit -> handleInit()
             is FeedAction.FeedSelected -> handleFeedSelection(action.feed)
             is FeedAction.UserInputUpdated -> _stateFlow.update { it.copy(user = action.text) }
             is FeedAction.RepoInputUpdated -> _stateFlow.update { it.copy(repo = action.text) }
@@ -69,8 +73,8 @@ class FeedViewModel @Inject constructor(
         }
     }
 
-    /* Either check by feed.key or feed.url.constans({user}), feed.url.constains({repo}), etc. */
     private suspend fun handleFeedSelection(feed: Feed) {
+        /* Either check by feed.key or feed.url.contains({user}), feed.url.contains({repo}), etc. */
         when (feed.key) {
             REPO_DISCUSSIONS_CATEGORY -> handleRepoDiscussionsCategory(feed)
             REPO_DISCUSSIONS -> handleRepoDiscussions(feed)
@@ -174,7 +178,15 @@ class FeedViewModel @Inject constructor(
         }
     }
 
-    private fun handleInit() = viewModelScope.launch(Dispatchers.IO) {
+    private fun trackNetworkStatus() = viewModelScope.launch {
+        networkStatusTracker.isConnectedFlow.collectLatest {
+            if (stateFlow.value.data.isEmpty() && !stateFlow.value.isLoading && it) {
+                getFeeds()
+            }
+        }
+    }
+
+    private fun getFeeds() = viewModelScope.launch(Dispatchers.IO) {
         _stateFlow.update { it.copy(isLoading = true) }
         when (val response = getFeedsUseCase()) {
             is Resource.Success -> {
@@ -185,7 +197,10 @@ class FeedViewModel @Inject constructor(
 
             is Resource.Error -> {
                 _stateFlow.update { it.copy(isLoading = false) }
-                _eventFlow.emit(FeedEvent.DisplayUnknownErrorMessage)
+                when (response.errorType) {
+                    ErrorType.NOT_FOUND -> _eventFlow.emit(FeedEvent.DisplayNotFoundErrorMessage)
+                    ErrorType.UNKNOWN -> _eventFlow.emit(FeedEvent.DisplayNetworkCallErrorMessage)
+                }
             }
         }
     }

@@ -18,6 +18,8 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -28,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -56,24 +59,45 @@ fun EntryScreen(
     feed: Feed,
 ) {
     LaunchedEffect(key1 = true) {
-        Timber.d("OnInit")
+        Timber.d("EntryScreen init")
         viewModel.handleAction(EntryAction.OnInit(feed))
     }
     val state = viewModel.stateFlow.collectAsState()
 
+    val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val snackbarHostState = remember { SnackbarHostState() }
     val isPortrait = LocalConfiguration.current.orientation == Configuration.ORIENTATION_PORTRAIT
 
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = {
+            SnackbarHost(snackbarHostState) {
+                Snackbar(
+                    containerColor = MaterialTheme.colorScheme.errorContainer,
+                    snackbarData = it
+                )
+            }
+        },
         modifier = Modifier.fillMaxSize(),
     ) {
         LaunchedEffect(Unit) {
             lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.eventFlow.collectLatest { event ->
-//                    when (event) {
-//                    }
+                    when (event) {
+                        EntryEvent.DisplayNetworkCallErrorMessage -> {
+                            snackbarHostState.showSnackbar(
+                                message = context.resources.getString(R.string.error_unknown),
+                                duration = SnackbarDuration.Short
+                            )
+                        }
+
+                        EntryEvent.DisplayNotFoundError -> {
+                            snackbarHostState.showSnackbar(
+                                message = context.resources.getString(R.string.error_not_found),
+                                duration = SnackbarDuration.Short
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -84,8 +108,8 @@ fun EntryScreen(
 
         if (!state.value.isLoading && state.value.data.isEmpty()) {
             ScreenMessage(
-                title = stringResource(id = R.string.message_no_data),
-                subtitle = stringResource(id = R.string.message_no_data_offline)
+                title = stringResource(id = R.string.message_no_data_title),
+                subtitle = stringResource(id = R.string.message_no_data_subtitle)
             )
             return@Scaffold
         }

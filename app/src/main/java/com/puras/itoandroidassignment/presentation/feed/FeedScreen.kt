@@ -19,6 +19,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -73,12 +74,18 @@ fun FeedScreen(
     * except the code below also gets triggered when a recomposition happens (for example
     * on screen orientation change if configChanges="orientation" isn't set). */
 //    LaunchedEffect(key1 = true) {
-//        Timber.d("OnInit")
 //        viewModel.handleAction(FeedAction.OnInit)
 //    }
 
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = {
+            SnackbarHost(snackbarHostState) {
+                Snackbar(
+                    containerColor = MaterialTheme.colorScheme.errorContainer,
+                    snackbarData = it
+                )
+            }
+        },
         modifier = Modifier.fillMaxSize()
     ) {
 
@@ -86,9 +93,16 @@ fun FeedScreen(
             lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.eventFlow.collect { event ->
                     when (event) {
-                        FeedEvent.DisplayUnknownErrorMessage -> {
+                        FeedEvent.DisplayNetworkCallErrorMessage -> {
                             snackbarHostState.showSnackbar(
                                 message = context.resources.getString(R.string.error_unknown),
+                                duration = SnackbarDuration.Short
+                            )
+                        }
+
+                        FeedEvent.DisplayNotFoundErrorMessage -> {
+                            snackbarHostState.showSnackbar(
+                                message = context.resources.getString(R.string.error_not_found),
                                 duration = SnackbarDuration.Short
                             )
                         }
@@ -105,11 +119,11 @@ fun FeedScreen(
             CircularIndeterminateIndicator()
             return@Scaffold
         }
-        /* TODO: COME BACK TO THIS FOR ERROR DISPLAYING AND STUFF */
+
         if (!state.value.isLoading && state.value.data.isEmpty()) {
             ScreenMessage(
-                title = stringResource(id = R.string.message_no_data),
-                subtitle = stringResource(id = R.string.message_no_data_offline)
+                title = stringResource(id = R.string.message_no_data_title),
+                subtitle = stringResource(id = R.string.message_no_data_subtitle)
             )
             return@Scaffold
         }
