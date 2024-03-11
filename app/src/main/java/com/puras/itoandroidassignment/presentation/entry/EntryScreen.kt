@@ -34,6 +34,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -150,6 +151,7 @@ private fun title(
             text = title.trim(),
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
+            textAlign = if (isPortrait) TextAlign.Start else TextAlign.Center,
             maxLines = if (isPortrait) 2 else 4,
             overflow = TextOverflow.Ellipsis
         )
