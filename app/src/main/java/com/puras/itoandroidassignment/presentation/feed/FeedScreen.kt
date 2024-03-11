@@ -6,7 +6,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -47,12 +46,12 @@ import com.puras.itoandroidassignment.R
 import com.puras.itoandroidassignment.data.local.model.Feed
 import com.puras.itoandroidassignment.presentation.destinations.EntryScreenDestination
 import com.puras.itoandroidassignment.presentation.ui.util.CircularIndeterminateIndicator
+import com.puras.itoandroidassignment.presentation.ui.util.ScreenMessage
 import com.puras.itoandroidassignment.util.SEC_ADVISORIES
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootNavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 @RootNavGraph(start = true)
 @Destination
@@ -88,7 +87,6 @@ fun FeedScreen(
                 viewModel.eventFlow.collect { event ->
                     when (event) {
                         FeedEvent.DisplayUnknownErrorMessage -> {
-                            Timber.e("DisplayUnknownMessage")
                             snackbarHostState.showSnackbar(
                                 message = context.resources.getString(R.string.error_unknown),
                                 duration = SnackbarDuration.Short
@@ -109,13 +107,10 @@ fun FeedScreen(
         }
         /* TODO: COME BACK TO THIS FOR ERROR DISPLAYING AND STUFF */
         if (!state.value.isLoading && state.value.data.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = stringResource(id = R.string.message_no_data))
-            }
+            ScreenMessage(
+                title = stringResource(id = R.string.message_no_data),
+                subtitle = stringResource(id = R.string.message_no_data_offline)
+            )
             return@Scaffold
         }
 

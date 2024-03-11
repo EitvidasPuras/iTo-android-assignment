@@ -6,7 +6,6 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -43,6 +42,7 @@ import com.puras.itoandroidassignment.data.local.model.Entry
 import com.puras.itoandroidassignment.data.local.model.Feed
 import com.puras.itoandroidassignment.presentation.ui.util.CacheImage
 import com.puras.itoandroidassignment.presentation.ui.util.CircularIndeterminateIndicator
+import com.puras.itoandroidassignment.presentation.ui.util.ScreenMessage
 import com.ramcosta.composedestinations.annotation.Destination
 import kotlinx.coroutines.flow.collectLatest
 import timber.log.Timber
@@ -83,13 +83,10 @@ fun EntryScreen(
         }
 
         if (!state.value.isLoading && state.value.data.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = stringResource(id = R.string.message_no_data))
-            }
+            ScreenMessage(
+                title = stringResource(id = R.string.message_no_data),
+                subtitle = stringResource(id = R.string.message_no_data_offline)
+            )
             return@Scaffold
         }
 

@@ -5,6 +5,7 @@
     <string name="error.input">Should not be empty</string>
 
     <string name="message.no_data">No Data. Try again</string>
+    <string name="message.no_data.offline">(The app does work offline.\nJust need some initial data first)</string>
 
     <string name="label.user_input">User</string>
     <string name="label.repo_input">Repo</string>
