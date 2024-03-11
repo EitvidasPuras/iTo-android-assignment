@@ -3,7 +3,6 @@ package com.puras.itoandroidassignment.presentation.feed
 import android.annotation.SuppressLint
 import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -13,11 +12,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -31,7 +28,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -48,12 +44,15 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.puras.itoandroidassignment.R
+import com.puras.itoandroidassignment.data.local.model.Feed
 import com.puras.itoandroidassignment.presentation.destinations.EntryScreenDestination
+import com.puras.itoandroidassignment.presentation.ui.util.CircularIndeterminateIndicator
+import com.puras.itoandroidassignment.util.SEC_ADVISORIES
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootNavGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 @RootNavGraph(start = true)
 @Destination
@@ -69,38 +68,27 @@ fun FeedScreen(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
     val isPortrait = LocalConfiguration.current.orientation == Configuration.ORIENTATION_PORTRAIT
 
     /* The code below or init block inside a viewmodel pretty much does the same thing
-    * except the code below also gets triggered when a recomposition happens. */
+    * except the code below also gets triggered when a recomposition happens (for example
+    * on screen orientation change if configChanges="orientation" isn't set). */
 //    LaunchedEffect(key1 = true) {
 //        Timber.d("OnInit")
 //        viewModel.handleAction(FeedAction.OnInit)
 //    }
 
-    if (state.value.isLoading) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Transparent)
-        ) {
-            CircularProgressIndicator(
-                modifier = Modifier.width(64.dp)
-            )
-        }
-    }
-
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize()
     ) {
 
         LaunchedEffect(Unit) {
             lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.eventFlow.collectLatest { event ->
+                viewModel.eventFlow.collect { event ->
                     when (event) {
                         FeedEvent.DisplayUnknownErrorMessage -> {
+                            Timber.e("DisplayUnknownMessage")
                             snackbarHostState.showSnackbar(
                                 message = context.resources.getString(R.string.error_unknown),
                                 duration = SnackbarDuration.Short
@@ -108,11 +96,27 @@ fun FeedScreen(
                         }
 
                         is FeedEvent.NavigateToEntryScreen -> {
-                            navigator.navigate(EntryScreenDestination(event.url))
+                            navigator.navigate(EntryScreenDestination(event.feed))
                         }
                     }
                 }
             }
+        }
+
+        if (state.value.isLoading) {
+            CircularIndeterminateIndicator()
+            return@Scaffold
+        }
+        /* TODO: COME BACK TO THIS FOR ERROR DISPLAYING AND STUFF */
+        if (!state.value.isLoading && state.value.data.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = stringResource(id = R.string.message_no_data))
+            }
+            return@Scaffold
         }
 
         Column(
@@ -146,7 +150,7 @@ fun FeedScreen(
                         )
                     },
                     singleLine = true,
-                    label = { Text("User") }
+                    label = { Text(stringResource(id = R.string.label_user_input)) }
                 )
                 OutlinedTextField(
                     modifier = Modifier
@@ -167,7 +171,7 @@ fun FeedScreen(
                         )
                     },
                     singleLine = true,
-                    label = { Text("Repo") }
+                    label = { Text(stringResource(id = R.string.label_repo_input)) }
                 )
                 OutlinedTextField(
                     modifier = Modifier
@@ -188,7 +192,7 @@ fun FeedScreen(
                         )
                     },
                     singleLine = true,
-                    label = { Text("Category") }
+                    label = { Text(stringResource(id = R.string.label_category_input)) }
                 )
             }
 
@@ -202,12 +206,14 @@ fun FeedScreen(
                 verticalArrangement = Arrangement.spacedBy(20.dp),
                 horizontalAlignment = if (isPortrait) Alignment.Start else Alignment.CenterHorizontally
             ) {
+                /* LazyColumn has a better performance, but it won't make any difference here,
+                * unlike in the EntryScreen */
                 state.value.data.forEach { feed ->
                     FeedItem(
-                        link = feed.link,
-                        onClick = { url ->
+                        feed = feed,
+                        onClick = {
                             lifecycleOwner.lifecycleScope.launch {
-                                viewModel.handleAction(FeedAction.FeedSelected(url))
+                                viewModel.handleAction(FeedAction.FeedSelected(feed))
                             }
                         }
                     )
@@ -215,13 +221,12 @@ fun FeedScreen(
             }
         }
     }
-
 }
 
 @Composable
 private fun FeedItem(
-    link: String,
-    onClick: (String) -> Unit
+    feed: Feed,
+    onClick: () -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -229,11 +234,11 @@ private fun FeedItem(
             .fillMaxWidth()
             .border(BorderStroke(2.dp, SolidColor(MaterialTheme.colorScheme.primary)))
             .clickable {
-                onClick(link)
+                onClick()
             }
     ) {
         Text(
-            text = link,
+            text = feed.link,
             modifier = Modifier
                 .padding(vertical = 12.dp, horizontal = 4.dp)
                 .fillMaxWidth(),
@@ -247,7 +252,7 @@ private fun FeedItem(
 @Composable
 fun FeedItemPreview() {
     FeedItem(
-        "https://github.com/security-advisories",
+        Feed(key = SEC_ADVISORIES, link = "https://github.com/security-advisories"),
         {}
     )
 }

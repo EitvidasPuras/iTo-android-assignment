@@ -13,6 +13,6 @@ class GetFeedsUseCaseImpl @Inject constructor(
     private val repository: GithubFeedRepository,
 ) : GetFeedsUseCase {
     override suspend operator fun invoke(): Resource<List<Feed>> {
-        return repository.getFeed()
+        return repository.getFeeds()
     }
 }

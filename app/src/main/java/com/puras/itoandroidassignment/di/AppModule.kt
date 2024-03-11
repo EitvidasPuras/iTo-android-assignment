@@ -25,9 +25,9 @@ object AppModule {
     @Provides
     @Singleton
     fun provideOkHttpClient(): OkHttpClient = OkHttpClient.Builder()
-        .connectTimeout(3, TimeUnit.SECONDS)
-        .readTimeout(3, TimeUnit.SECONDS)
-        .writeTimeout(3, TimeUnit.SECONDS)
+        .connectTimeout(5, TimeUnit.SECONDS)
+        .readTimeout(5, TimeUnit.SECONDS)
+        .writeTimeout(5, TimeUnit.SECONDS)
         .build()
 
     @Provides
@@ -43,6 +43,10 @@ object AppModule {
     @Provides
     @Singleton
     fun provideFeedDao(database: AppDatabase) = database.feedDao()
+
+    @Provides
+    @Singleton
+    fun provideEntryDao(database: AppDatabase) = database.entryDao()
 
     @Provides
     @Singleton

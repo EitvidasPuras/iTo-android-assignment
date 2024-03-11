@@ -3,4 +3,12 @@
 
     <string name="error.unknown">An unknown error occurred, try again later</string>
     <string name="error.input">Should not be empty</string>
+
+    <string name="message.no_data">No Data. Try again</string>
+
+    <string name="label.user_input">User</string>
+    <string name="label.repo_input">Repo</string>
+    <string name="label.category_input">Category</string>
+
+    <string name="text.author_by">by: %1$s</string>
 </resources>

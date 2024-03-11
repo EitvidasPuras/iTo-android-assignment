@@ -10,3 +10,7 @@ data class FeedResponse(
     @SerializedName("user_url") val user_url: String,
     @SerializedName("_links") val links: Map<String, LinkResponse>,
 )
+
+data class LinkResponse(
+    @SerializedName("href") val href: String
+)
