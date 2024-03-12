@@ -1,7 +1,7 @@
 package com.puras.itoandroidassignment.data.repository
 
+import com.puras.itoandroidassignment.data.local.dao.EntryDao
 import com.puras.itoandroidassignment.data.local.dao.FeedDao
-import com.puras.itoandroidassignment.data.local.dao.TimelineEntryDao
 import com.puras.itoandroidassignment.data.local.model.Entry
 import com.puras.itoandroidassignment.data.local.model.Feed
 import com.puras.itoandroidassignment.data.mapper.toEntry
@@ -23,7 +23,7 @@ class GithubFeedRepositoryImpl @Inject constructor(
     private val api: GithubApi,
     private val okHttp: OkHttpClient,
     private val feedDao: FeedDao,
-    private val entryDao: TimelineEntryDao,
+    private val entryDao: EntryDao,
     private val parser: XMLParser,
     private val networkStatusTracker: NetworkStatusTracker,
 ) : GithubFeedRepository {
@@ -115,7 +115,7 @@ class GithubFeedRepositoryImpl @Inject constructor(
     private suspend fun storeEntries(list: List<EntryResponse>, feedKey: String) {
         val entries = mutableListOf<Entry>()
         list.forEach { entries.add(it.toEntry(feedKey)) }
-        entryDao.deleteAll(feedKey)
+        entryDao.delete(feedKey)
         entryDao.insertList(entries)
     }
 }

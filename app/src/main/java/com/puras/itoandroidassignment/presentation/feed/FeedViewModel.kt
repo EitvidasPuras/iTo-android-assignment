@@ -141,13 +141,12 @@ class FeedViewModel @Inject constructor(
     }
 
     private fun clearErrors(
-        isUserError: Boolean? = null,
         isRepoError: Boolean? = null,
         isCategoryError: Boolean? = null
     ) {
         _stateFlow.update { state ->
             state.copy(
-                isUserError = isUserError ?: state.isUserError,
+                isUserError = state.isUserError,
                 isRepoError = isRepoError ?: state.isRepoError,
                 isCategoryError = isCategoryError ?: state.isCategoryError
             )

@@ -2,8 +2,8 @@ package com.puras.itoandroidassignment.data.local
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import com.puras.itoandroidassignment.data.local.dao.EntryDao
 import com.puras.itoandroidassignment.data.local.dao.FeedDao
-import com.puras.itoandroidassignment.data.local.dao.TimelineEntryDao
 import com.puras.itoandroidassignment.data.local.model.Entry
 import com.puras.itoandroidassignment.data.local.model.Feed
 
@@ -11,5 +11,5 @@ import com.puras.itoandroidassignment.data.local.model.Feed
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun feedDao(): FeedDao
-    abstract fun entryDao(): TimelineEntryDao
+    abstract fun entryDao(): EntryDao
 }
