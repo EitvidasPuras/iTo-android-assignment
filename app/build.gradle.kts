@@ -15,6 +15,7 @@ android {
     defaultConfig {
         applicationId = "com.puras.itoandroidassignment"
         minSdk = 29
+        /* Why creating a new project doesn't automatically set the targetSdk to the latest one? */
         targetSdk = 33
         versionCode = 1
         versionName = "1.0"
@@ -68,13 +69,6 @@ dependencies {
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    androidTestImplementation(platform("androidx.compose:compose-bom:2023.03.00"))
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
-    debugImplementation("androidx.compose.ui:ui-tooling")
-    debugImplementation("androidx.compose.ui:ui-test-manifest")
 
     // Retrofit
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
@@ -106,12 +100,24 @@ dependencies {
     implementation("io.github.raamcosta.compose-destinations:core:1.11.1-alpha")
     ksp("io.github.raamcosta.compose-destinations:ksp:1.11.1-alpha")
 
-    // ArrowKt
-    implementation("io.arrow-kt:arrow-core:1.2.1")
-    implementation("io.arrow-kt:arrow-fx-coroutines:1.2.1")
-
     // Timber
     implementation("com.jakewharton.timber:timber:4.7.1")
+
+    /* =============== Testing =============== */
+    testImplementation("junit:junit:4.13.2")
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    androidTestImplementation(platform("androidx.compose:compose-bom:2023.03.00"))
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+
+    // MockK
+    testImplementation("io.mockk:mockk:1.13.2")
+    testImplementation("io.mockk:mockk-android:1.13.2")
+    testImplementation("io.mockk:mockk-agent:1.13.2")
+
+    /* =============== Debugging =============== */
+    debugImplementation("androidx.compose.ui:ui-tooling")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
 }
 kapt {
     correctErrorTypes = true
@@ -125,5 +131,4 @@ kotlin {
             kotlin.srcDir("build/generated/ksp/release/kotlin")
         }
     }
-//    jvmToolchain(8)
 }

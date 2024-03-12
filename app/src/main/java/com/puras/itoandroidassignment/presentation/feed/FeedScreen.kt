@@ -249,7 +249,7 @@ private fun FeedItem(
         Text(
             text = feed.link,
             modifier = Modifier
-                .padding(vertical = 12.dp, horizontal = 4.dp)
+                .padding(vertical = 12.dp, horizontal = 6.dp)
                 .fillMaxWidth(),
             fontSize = 14.sp,
             lineHeight = 18.sp

@@ -124,10 +124,10 @@ fun EntryScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 content = {
                     items(state.value.data) { entry ->
-                        entry.title?.let { title(title = it, isPortrait = isPortrait) }
-                        entry.author?.let { author(entry = entry, isPortrait = isPortrait) }
-                        entry.published?.let { published(date = it) }
-                        entry.content?.let { webView(content = it) }
+                        entry.title?.let { Title(title = it, isPortrait = isPortrait) }
+                        entry.author?.let { Author(entry = entry, isPortrait = isPortrait) }
+                        entry.published?.let { Published(date = it) }
+                        entry.content?.let { WebView(content = it) }
                         if (entry.title != null && entry.author != null && entry.published != null && entry.content != null) {
                             Divider(thickness = 2.dp, color = MaterialTheme.colorScheme.primary)
                         }
@@ -139,7 +139,7 @@ fun EntryScreen(
 }
 
 @Composable
-private fun title(
+private fun Title(
     title: String,
     isPortrait: Boolean
 ) {
@@ -159,7 +159,7 @@ private fun title(
 }
 
 @Composable
-private fun author(
+private fun Author(
     entry: Entry,
     isPortrait: Boolean
 ) {
@@ -190,7 +190,7 @@ private fun author(
 }
 
 @Composable
-private fun published(
+private fun Published(
     date: String
 ) {
     Text(
@@ -203,7 +203,7 @@ private fun published(
 }
 
 @Composable
-private fun webView(
+private fun WebView(
     content: String
 ) {
     AndroidView(
